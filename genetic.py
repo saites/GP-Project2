@@ -122,7 +122,7 @@ class GeneticProgram:
                 n1, n2 = crossOver(n1,n2,self.crossDepth)
                 newpop.append(n2)
             if random.random() < self.mutateProb:
-                n1 = self.genNode(0, randint(0, randint(1,5)))
+                n1 = self.genNode(0, randint(2, randint(3,6)))
             newpop.append(n1)
 
         if len(newpop) > len(self.population):

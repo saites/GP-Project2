@@ -24,6 +24,16 @@ class PixelValue(Terminal):
         self.x = random.randint(0,27)
         self.y = random.randint(0,27)
 
+class BoxValue(Terminal):
+    def __init__(self, x1=0,y1=0,x2=0,y2=0):
+        self.bounds = (x1, y1, x2, y2)
+
+    def __str__(self):
+        return "sum(image[%d:%d,%d:%d])" % self.bounds
+
+    def makeRand(self):
+        self.bounds = tuple([random.randint(0,27) for i in range(4)])
+
 class Operation(Primitive):
     SUM,SUB,MUL,DIV = range(4)
     OPSTR = dict(zip(range(4), ['+','-','*','/']))
@@ -37,13 +47,16 @@ class Operation(Primitive):
         (str(self.children[0]), Operation.OPSTR[self.op], str(self.children[1]))
 
     def makeRand(self):
-        self.op = random.randint(0,3)
+        self.op = random.randint(0,1)
 
 def getAnswer(node, image):
     if isinstance(node, RandNumber):
         return node.value
     elif isinstance(node, PixelValue):
         return image.reshape(28,28)[node.y, node.x]
+    elif isinstance(node, BoxValue):
+        return sum(image.reshape(28,28)[node.bounds[0]:node.bounds[1],\
+            node.bounds[2]:node.bounds[3]])
     elif isinstance(node, Operation):
         c1 = getAnswer(node.children[0], image)
         c2 = getAnswer(node.children[1], image)
@@ -55,7 +68,7 @@ def getAnswer(node, image):
 def execute(node, dataset, answers):
     hit = 0
     for idx, image in enumerate(dataset):
-        if answers[idx]-1 == int(getAnswer(node, image)):
+        if answers[idx] == int(getAnswer(node, image) % 10):
             hit += 1
     return hit
 

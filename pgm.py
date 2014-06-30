@@ -1,39 +1,46 @@
 from numpy import *
+from matplotlib.pyplot import plot,show
 from pandas import read_csv
 import random
 from genetic import *
 from represent import *
 
+# constants
 PATH = 'MNISTData'
 programsLoc = 'programs'
 
-# get images
+# parameters
+numGens = 2
+numExamples = 1000 #max is 59999
+
+# get dataset
 data = read_csv(PATH+'/train.csv',delimiter=',').values
 train_targets = data[:,0]
 train_images = data[:,1:]
 targets = identity(10) * 2 - 1
-#test_images = read_csv(PATH+'/test.csv',delimiter=',').values
+train_images = train_images[:numExamples]
+train_targets = train_targets[:numExamples]
 
-NUM_TRAIN = len(train_images)
-#NUM_TEST  = len(test_images) 
-NUM_DIGITS = 10
-
-train_images = train_images[:1000]
-train_targets = train_targets[:1000]
-
+# genetic program
 def metric(pgm):
     return execute(pgm, train_images, train_targets)
-
 primitives = [Operation]
-terminals = [RandNumber, PixelValue]
+terminals = [RandNumber, PixelValue, BoxValue]
 GP = GeneticProgram(primitives, terminals, metric, mutateProb=.1)
+GP.genPopulation(dict(zip(range(3,7), [100]*4)))
 
-GP.genPopulation(dict(zip(range(1,6), [100]*5)))
-
-for i in range(100):
+# genetic algorithm
+keepfit = zeros((numGens,1))
+avgfit = zeros((numGens,1))
+for i in xrange(numGens):
     print i
     GP.breed()
-    print [n[1] for n in GP.fitness]
+    allfit = [n[1] for n in GP.fitness]
+    print allfit
+    keepfit[i] = allfit[-1]
+    avgfit[i] = mean(allfit)
+    
+    #write out the best program from this generation
     with open('%s/pgm%d.py' % (programsLoc, i), 'w') as F:
         F.write("from numpy import *\n")
         F.write("from pandas import read_csv\n")
@@ -50,7 +57,7 @@ for i in range(100):
         F.write("hits = 0\n")
         F.write("for i in range(len(train_images)):\n")
         F.write("\tprint i\n")
-        F.write("\tbelief = int(getAns(train_images[i].reshape(28,28)))\n")
+        F.write("\tbelief = int(getAns(train_images[i].reshape(28,28))%10)\n")
         F.write("\tif belief >= 0 and belief < 10:\n")
         F.write("\t\tconf[train_targets[i], belief] += 1\n")
         F.write("\t\tif belief == train_targets[i]:\n")
@@ -61,3 +68,9 @@ for i in range(100):
         F.write("print 'invalid:', invalid\n")
         F.write("print 'hits:', hits\n")
         F.write("print 'hit%:', float(hits)/float(len(train_images)-invalid)\n")
+
+# plot something useful
+plot(keepfit)
+show()
+plot(avgfit)
+show()
