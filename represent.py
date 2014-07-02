@@ -10,7 +10,7 @@ class RandNumber(Terminal):
         return str(self.value)
 
     def makeRand(self):
-        self.value = random.random() * 100
+        self.value = random.random()
 
 class PixelValue(Terminal):
     def __init__(self, x=0,y=0):
@@ -25,18 +25,18 @@ class PixelValue(Terminal):
         self.y = random.randint(0,27)
 
 class BoxValue(Terminal):
-    def __init__(self, x1=0,y1=0,x2=0,y2=0):
-        self.bounds = (x1, y1, x2, y2)
+    def __init__(self, a=0,b=0,c=0,d=0):
+        self.bounds = (a,b,c,d)
 
     def __str__(self):
         return "sum(image[%d:%d,%d:%d])" % self.bounds
 
     def makeRand(self):
-        self.bounds = tuple([random.randint(0,27) for i in range(4)])
+        self.bounds = tuple([random.randint(0,27) for i in xrange(4)])
 
 class Operation(Primitive):
     SUM,SUB,MUL,DIV = range(4)
-    OPSTR = dict(zip(range(4), ['+','-','*','/']))
+    OPSTR = dict(zip(xrange(4), ['+','-','*','/']))
     def __init__(self, op=0):
         Primitive.__init__(self, 2)
         self.op = op
@@ -47,7 +47,7 @@ class Operation(Primitive):
         (str(self.children[0]), Operation.OPSTR[self.op], str(self.children[1]))
 
     def makeRand(self):
-        self.op = random.randint(0,1)
+        self.op = random.randint(0,3)
 
 def getAnswer(node, image):
     if isinstance(node, RandNumber):
@@ -65,10 +65,9 @@ def getAnswer(node, image):
         else:
             return eval("%d %s %d" % (c1, Operation.OPSTR[node.op], c2))
     
-def execute(node, dataset, answers):
+def execute(node, dataset):
     hit = 0
     for idx, image in enumerate(dataset):
-        if answers[idx] == int(getAnswer(node, image) % 10):
+        if (idx/(len(dataset)/10)) == int(getAnswer(node, image) % 10):
             hit += 1
     return hit
-
