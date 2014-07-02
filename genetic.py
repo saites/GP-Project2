@@ -79,7 +79,7 @@ class GeneticProgram:
             n = choice(self.primitives)()
             n.makeRand()
             n.children = [self.genNode(depth+1, toDepth) \
-                for i in range(n.maxChildren)] 
+                for i in xrange(n.maxChildren)] 
         return n
         
     def genPopulation(self, popSizeDict):
@@ -92,7 +92,7 @@ class GeneticProgram:
         self.population = []
         for depth in popSizeDict:
             self.population +=\
-                [self.genNode(0, depth) for i in range(popSizeDict[depth])]
+                [self.genNode(0, depth) for i in xrange(popSizeDict[depth])]
             
     def breed(self):
         if len(self.population) == 1:
@@ -106,7 +106,7 @@ class GeneticProgram:
         else:
             fsum = 1.
         percent = array([f[1] / fsum for f in self.fitness])
-        for i in range(len(percent)-1):
+        for i in xrange(len(percent)-1):
             percent[i+1] += percent[i]
 
         newpop = deepcopy([self.fitness[-1][0]])
